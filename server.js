@@ -6,8 +6,10 @@ var DB = require('rippled-network-crawler/src/lib/database');
 var Promise = require('bluebird');
 
 var arguments = process.argv.slice(2);
-if (arguments.length == 1) {
-  var dbUrl = arguments[0];
+if (arguments.length == 3) {
+  var local_host = arguments[0];
+  var local_port = arguments[1];
+  var dbUrl = arguments[2];
 } else {
   console.error("Need db url as argument")
   process.exit(1);
@@ -51,7 +53,7 @@ app.get('/pubkey', function (req, res) {
 });
 
 
-var server = app.listen(51235 , function () {
+var server = app.listen(local_port, local_host, function () {
   var host = server.address().address;
   var port = server.address().port;
 

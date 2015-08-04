@@ -2,7 +2,7 @@
 
 ``` bash
 npm install
-node server.js <db_url>
+node server.js <host> <port> <db_url>
 ```
 
 ### API
