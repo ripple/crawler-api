@@ -1,4 +1,4 @@
-As of 8/5/2015 hosted at `http://10.30.72.248:1234`
+As of 8/5/2015 hosted at http://10.30.72.248:1234/
 
 ### RUN
 
