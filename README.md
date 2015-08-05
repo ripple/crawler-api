@@ -7,8 +7,6 @@ node server.js <host> <port> <db_url>
 
 ### API
 
-Served on port `51235`
-
 #### GET `/ipp`
 
 Returns array of unique ipps in latest crawl.
