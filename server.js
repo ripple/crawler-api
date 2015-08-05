@@ -1,3 +1,4 @@
+'use strict';
 var express = require('express');
 var app = express();
 var rc_util = require('rippled-network-crawler/src/lib/utility.js');
@@ -5,13 +6,13 @@ var modelsFactory = require('rippled-network-crawler/src/lib/models.js');
 var DB = require('rippled-network-crawler/src/lib/database');
 var Promise = require('bluebird');
 
-var arguments = process.argv.slice(2);
-if (arguments.length == 3) {
-  var local_host = arguments[0];
-  var local_port = arguments[1];
-  var dbUrl = arguments[2];
+var args = process.argv.slice(2);
+if (args.length === 3) {
+  var local_host = args[0];
+  var local_port = args[1];
+  var dbUrl = args[2];
 } else {
-  console.error("Need db url as argument")
+  console.error('Need db url as argument');
   process.exit(1);
 }
 
@@ -37,23 +38,24 @@ function getLatestCrawl(dbUrl, logsql) {
   });
 }
 
-app.get('/ipp', function (req, res) {
-  logsql = true;
-  getLatestCrawl(dbUrl, logsql).then( function(latestCrawl) {
+app.get('/ipp', function(req, res) {
+  var logsql = true;
+  getLatestCrawl(dbUrl, logsql).then(function(latestCrawl) {
     var ipps = rc_util.getIpps(latestCrawl.data);
-    res.send(ipps)
-  })
+    res.send(ipps);
+  });
 });
 
-app.get('/pubkey', function (req, res) {
-  getLatestCrawl(dbUrl, logsql).then( function(latestCrawl) {
+app.get('/pubkey', function(req, res) {
+  var logsql = true;
+  getLatestCrawl(dbUrl, logsql).then(function(latestCrawl) {
     var ipps = rc_util.getRippledsC(latestCrawl.data);
-    res.send(ipps)
-  })
+    res.send(ipps);
+  });
 });
 
 
-var server = app.listen(local_port, local_host, function () {
+var server = app.listen(local_port, local_host, function() {
   var host = server.address().address;
   var port = server.address().port;
 
