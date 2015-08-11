@@ -5,6 +5,6 @@
   "dependencies": {
     "bluebird": "^2.9.34",
     "express": "^4.13.3",
-    "rippled-network-crawler": "^0.3.0"
+    "rippled-network-crawler": "^0.3.4"
   }
 }

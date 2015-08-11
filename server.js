@@ -16,40 +16,18 @@ if (args.length === 3) {
   process.exit(1);
 }
 
-function getLatestCrawl(dbUrl, logsql) {
-  return new Promise(function(resolve, reject) {
-    var log = logsql ? console.log : false;
-    var sql = DB.initSql(dbUrl, log);
-
-    var model = modelsFactory(sql);
-
-    model.Crawl.findOne({
-      order: [
-        ['id', 'DESC']
-      ]
-    }).then(function(crawl) {
-      if (!crawl) {
-        return reject(new Error('No crawls in database'));
-      }
-      return resolve(crawl.dataValues);
-    }).catch(function(error) {
-      return reject(error);
-    });
-  });
-}
-
 app.get('/ipp', function(req, res) {
   var logsql = true;
-  getLatestCrawl(dbUrl, logsql).then(function(latestCrawl) {
-    var ipps = rc_util.getIpps(latestCrawl.data);
+  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
+    var ipps = rc_util.getIpps(JSON.parse(row.data));
     res.send(ipps);
   });
 });
 
 app.get('/pubkey', function(req, res) {
   var logsql = true;
-  getLatestCrawl(dbUrl, logsql).then(function(latestCrawl) {
-    var ipps = rc_util.getRippledsC(latestCrawl.data);
+  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
+    var ipps = rc_util.getRippledsC(JSON.parse(row.data));
     res.send(ipps);
   });
 });
