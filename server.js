@@ -16,10 +16,18 @@ if (args.length === 3) {
   process.exit(1);
 }
 
+app.get('/', function(req, res) {
+  var instructions = {
+    'ipp': 'GET /ipp',
+    'pubkey': 'GET /pubkey'
+  }
+  res.send(instructions);
+});
+
 app.get('/ipp', function(req, res) {
   var logsql = true;
   rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getIpps(JSON.parse(row.data));
+    var ipps = rc_util.getIpps(row.data);
     res.send(ipps);
   });
 });
@@ -27,7 +35,7 @@ app.get('/ipp', function(req, res) {
 app.get('/pubkey', function(req, res) {
   var logsql = true;
   rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getRippledsC(JSON.parse(row.data));
+    var ipps = rc_util.getRippledsC(row.data);
     res.send(ipps);
   });
 });
