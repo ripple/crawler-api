@@ -27,7 +27,7 @@ app.get('/', function(req, res) {
 app.get('/ipp', function(req, res) {
   var logsql = true;
   rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getIpps(row.data);
+    var ipps = rc_util.getIpps(JSON.parse(row.data));
     res.send(ipps);
   });
 });
@@ -35,7 +35,7 @@ app.get('/ipp', function(req, res) {
 app.get('/pubkey', function(req, res) {
   var logsql = true;
   rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getRippledsC(row.data);
+    var ipps = rc_util.getRippledsC(JSON.parse(row.data));
     res.send(ipps);
   });
 });
