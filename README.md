@@ -9,21 +9,6 @@ node server.js <host> <port> <db_url>
 
 ### API
 
-#### GET `/ipp`
-
-Returns array of unique ipps in latest crawl.
-
-```
-[
-  "54.186.73.52:51235",
-  "107.150.44.226:51235",
-  "104.233.75.182:51235",
-  "192.170.145.67:51235",
-  "93.190.138.234:51235",
-  ...
-]
-```
-
 #### GET `/rippleds`
 
 Returns array of unique rippleds in latest crawl with some info.

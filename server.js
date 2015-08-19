@@ -19,18 +19,9 @@ if (args.length === 3) {
 
 app.get('/', function(req, res) {
   var instructions = {
-    'ipp': 'GET /ipp',
     'rippleds': 'GET /rippleds'
   }
   res.send(instructions);
-});
-
-app.get('/ipp', function(req, res) {
-  var logsql = true;
-  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getIpps(JSON.parse(row.data));
-    res.send(ipps);
-  });
 });
 
 app.get('/rippleds', function(req, res) {
