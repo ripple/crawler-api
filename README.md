@@ -24,18 +24,19 @@ Returns array of unique ipps in latest crawl.
 ]
 ```
 
-#### GET `/pubkey`
+#### GET `/rippleds`
 
-Returns object of unique rippleds in latest crawl with some info.
+Returns array of unique rippleds in latest crawl with some info.
 
 ```
-{
-  "n9K1mJQsaSMzNgwY7vXGLzh9h6HVpSCeRu3J5HESrgBKGewiuSQL": {
+[
+  {
+    "public_key" : "n9K1mJQsaSMzNgwY7vXGLzh9h6HVpSCeRu3J5HESrgBKGewiuSQL",
     "ipp": "107.150.44.226:51235",
     "version": "rippled-0.28.2",
     "in": 10,
     "out": 2
   },
   ...
-}
+]
 ```
