@@ -5,6 +5,7 @@ var rc_util = require('rippled-network-crawler/src/lib/utility.js');
 var modelsFactory = require('rippled-network-crawler/src/lib/models.js');
 var DB = require('rippled-network-crawler/src/lib/database');
 var Promise = require('bluebird');
+var _ = require("lodash");
 
 var args = process.argv.slice(2);
 if (args.length === 3) {
@@ -18,25 +19,20 @@ if (args.length === 3) {
 
 app.get('/', function(req, res) {
   var instructions = {
-    'ipp': 'GET /ipp',
-    'pubkey': 'GET /pubkey'
+    'rippleds': 'GET /rippleds'
   }
   res.send(instructions);
 });
 
-app.get('/ipp', function(req, res) {
+app.get('/rippleds', function(req, res) {
   var logsql = true;
   rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getIpps(JSON.parse(row.data));
-    res.send(ipps);
-  });
-});
-
-app.get('/pubkey', function(req, res) {
-  var logsql = true;
-  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
-    var ipps = rc_util.getRippledsC(JSON.parse(row.data));
-    res.send(ipps);
+    var rippleds = rc_util.getRippledsC(JSON.parse(row.data));
+    var flatRippleds = _.map(rippleds, function(item, key) {
+      item.public_key = key;
+      return item;
+    });
+    res.send(flatRippleds);
   });
 });
 
