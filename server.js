@@ -19,7 +19,8 @@ if (args.length === 3) {
 
 app.get('/', function(req, res) {
   var instructions = {
-    'rippleds': 'GET /rippleds'
+    'rippleds': 'GET /rippleds',
+    'graph': 'GET /graph'
   }
   res.send(instructions);
 });
@@ -34,6 +35,45 @@ app.get('/rippleds', function(req, res) {
     });
     res.send(flatRippleds);
   });
+});
+
+app.get('/graph', function(req, res) {
+  var logsql = true;
+
+  function graphify(crawl) {
+    var results = {nodes: [], links: []};
+    var pkToIndex = {};
+    var rippleds = rc_util.getRippledsC(crawl);
+    var links = rc_util.getLinks(crawl);
+
+    // Fill in nodes and save indices
+    _.each(Object.keys(rippleds), function(pk) {
+      pkToIndex[pk] = results.nodes.length;
+      var node = rippleds[pk];
+      node.public_key = pk;
+      results.nodes.push(node);
+    });
+
+    // Format links to match d3
+    _.each(Object.keys(links), function(link) {
+      var sIndex = pkToIndex[link.split(',')[0]];
+      var tIndex = pkToIndex[link.split(',')[1]];
+      if (sIndex !== undefined && tIndex !== undefined) {
+        var newlink = {};
+        newlink.source = pkToIndex[link.split(',')[0]];
+        newlink.target = pkToIndex[link.split(',')[1]];
+        newlink.value = links[link];
+        results.links.push(newlink);
+      }
+    });
+    return results;
+  }
+
+  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
+    var graph = graphify(JSON.parse(row.data));
+    res.send(graph);
+  }).catch(res.send);
+
 });
 
 
