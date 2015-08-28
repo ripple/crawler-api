@@ -18,6 +18,7 @@ if (args.length === 3) {
 }
 
 app.get('/', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
   var instructions = {
     'rippleds': 'GET /rippleds',
     'graph': 'GET /graph'
@@ -26,6 +27,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/rippleds', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
   var logsql = true;
   rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
     var rippleds = rc_util.getRippledsC(JSON.parse(row.data));
@@ -38,6 +40,7 @@ app.get('/rippleds', function(req, res) {
 });
 
 app.get('/graph', function(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
   var logsql = true;
 
   function graphify(crawl) {
