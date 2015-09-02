@@ -29,18 +29,24 @@ app.get('/', function(req, res) {
 app.get('/rippleds', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
   var logsql = true;
-  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
+  rc_util.getLatestRow(dbUrl, logsql)
+  .then(function(row) {
     var rippleds = rc_util.getRippledsC(JSON.parse(row.data));
     var flatRippleds = _.map(rippleds, function(item, key) {
       item.public_key = key;
       return item;
     });
     res.send(flatRippleds);
+  })
+  .catch(function(err) {
+    console.log(err);
+    res.status(500);
+    res.send('Internal Server Error');
   });
 });
 
 app.get('/graph', function(req, res) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Origin', '*');
   var logsql = true;
 
   function graphify(crawl) {
@@ -72,10 +78,16 @@ app.get('/graph', function(req, res) {
     return results;
   }
 
-  rc_util.getLatestRow(dbUrl, logsql).then(function(row) {
+  rc_util.getLatestRow(dbUrl, logsql).
+  then(function(row) {
     var graph = graphify(JSON.parse(row.data));
     res.send(graph);
-  }).catch(res.send);
+  })
+  .catch(function(err) {
+    console.log(err);
+    res.status(500);
+    res.send('Internal Server Error');
+  });
 
 });
 
