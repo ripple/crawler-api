@@ -6,6 +6,6 @@
     "bluebird": "^2.9.34",
     "express": "^4.13.3",
     "lodash": "^3.10.1",
-    "rippled-network-crawler": "git+https://github.com/ripple/rippled-network-crawler.git"
+    "rippled-network-crawler": "latest"
   }
 }
