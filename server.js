@@ -28,7 +28,7 @@ app.get('/', function(req, res) {
 
 app.get('/rippleds', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
-  var logsql = true;
+  var logsql = false;
   rc_util.getLatestRow(dbUrl, logsql)
   .then(function(row) {
     var rippleds = rc_util.getRippledsC(JSON.parse(row.data));
@@ -42,12 +42,13 @@ app.get('/rippleds', function(req, res) {
     console.log(err);
     res.status(500);
     res.send('Internal Server Error');
+    process.exit(1);
   });
 });
 
 app.get('/graph', function(req, res) {
   res.header('Access-Control-Allow-Origin', '*');
-  var logsql = true;
+  var logsql = false;
 
   function graphify(crawl) {
     var results = {nodes: [], links: []};
@@ -87,6 +88,7 @@ app.get('/graph', function(req, res) {
     console.log(err);
     res.status(500);
     res.send('Internal Server Error');
+    process.exit(1);
   });
 
 });
