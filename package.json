@@ -4,6 +4,7 @@
   "author": "Souren Papazian",
   "dependencies": {
     "bluebird": "^2.9.34",
+    "crawler-hbase": "latest",
     "express": "^4.13.3",
     "lodash": "^3.10.1",
     "rippled-network-crawler": "latest"

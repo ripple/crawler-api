@@ -1,11 +1,10 @@
 'use strict';
 var express = require('express');
 var app = express();
-var rc_util = require('rippled-network-crawler/src/lib/utility.js');
-var modelsFactory = require('rippled-network-crawler/src/lib/models.js');
-var DB = require('rippled-network-crawler/src/lib/database');
+var Client = require('crawler-hbase').Client;
+var utils = require('crawler-hbase').utils;
 var Promise = require('bluebird');
-var _ = require("lodash");
+var _ = require('lodash');
 
 var args = process.argv.slice(2);
 if (args.length === 3) {
@@ -16,27 +15,40 @@ if (args.length === 3) {
   console.error('Need db url as argument');
   process.exit(1);
 }
+var hbaseClient = new Client(dbUrl);
 
 app.get('/', function(req, res) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Origin', '*');
   var instructions = {
     'rippleds': 'GET /rippleds',
     'graph': 'GET /graph'
-  }
+  };
   res.send(instructions);
 });
 
 app.get('/rippleds', function(req, res) {
-  res.header("Access-Control-Allow-Origin", "*");
-  var logsql = false;
-  rc_util.getLatestRow(dbUrl, logsql)
-  .then(function(row) {
-    var rippleds = rc_util.getRippledsC(JSON.parse(row.data));
-    var flatRippleds = _.map(rippleds, function(item, key) {
-      item.public_key = key;
-      return item;
+  res.header('Access-Control-Allow-Origin', '*');
+
+  console.log('/rippleds requested');
+  hbaseClient.getCrawlInfo()
+  .then(function(crawlInfo) {
+    return hbaseClient.getCrawlNodeStats(crawlInfo.rowkey).then(function(nodeStats) {
+      var rippleds = _.map(nodeStats, function(r) {
+        return {
+          'version': r.version,
+          'uptime': parseInt(r.uptime),
+          'in': parseInt(r.in_count),
+          'out': parseInt(r.out_count),
+          'public_key': r.pubkey,
+          'in_add_count': r.in_add_count,
+          'out_add_count': r.out_add_count,
+          'in_drop_count': r.in_drop_count,
+          'out_drop_count': r.out_drop_count,
+          'ipp': r.ipp,
+        };
+      });
+      res.send(rippleds);
     });
-    res.send(flatRippleds);
   })
   .catch(function(err) {
     console.log(err);
@@ -48,41 +60,57 @@ app.get('/rippleds', function(req, res) {
 
 app.get('/graph', function(req, res) {
   res.header('Access-Control-Allow-Origin', '*');
-  var logsql = false;
 
-  function graphify(crawl) {
-    var results = {nodes: [], links: []};
-    var pkToIndex = {};
-    var rippleds = rc_util.getRippledsC(crawl);
-    var links = rc_util.getLinks(crawl);
+  function graphify(crawlKey) {
+    return new Promise(function(resolve, reject) {
 
-    // Fill in nodes and save indices
-    _.each(Object.keys(rippleds), function(pk) {
-      pkToIndex[pk] = results.nodes.length;
-      var node = rippleds[pk];
-      node.public_key = pk;
-      results.nodes.push(node);
+      var results = {nodes: [], links: []};
+      Promise.all([
+        hbaseClient.getCrawlNodeStats(crawlKey),
+        hbaseClient.getAllConnections(crawlKey)
+      ])
+      .then(function(retArray) {
+        var rippleds = retArray[0];
+        var links = retArray[1];
+        var pkToIndex = {};
+        _.each(rippleds, function(r) {
+          pkToIndex[r.pubkey] = results.nodes.length;
+          var node = {
+            'version': r.version,
+            'uptime': parseInt(r.uptime),
+            'in': parseInt(r.in_count),
+            'out': parseInt(r.out_count),
+            'public_key': r.pubkey,
+            'in_add_count': r.in_add_count,
+            'out_add_count': r.out_add_count,
+            'in_drop_count': r.in_drop_count,
+            'out_drop_count': r.out_drop_count,
+            'ipp': r.ipp,
+          };
+          results.nodes.push(node);
+        });
+        _.each(links, function(l) {
+          var sIndex = pkToIndex[utils.getSourceByConnectionKey(l.rowkey)];
+          var tIndex = pkToIndex[utils.getTargetByConnectionKey(l.rowkey)];
+          if (sIndex !== undefined && tIndex !== undefined) {
+            var newlink = {};
+            newlink.source = sIndex;
+            newlink.target = tIndex;
+            newlink.value = 1;
+            results.links.push(newlink);
+          }
+        });
+        return resolve(results);
+      })
+      .catch(reject);
     });
-
-    // Format links to match d3
-    _.each(Object.keys(links), function(link) {
-      var sIndex = pkToIndex[link.split(',')[0]];
-      var tIndex = pkToIndex[link.split(',')[1]];
-      if (sIndex !== undefined && tIndex !== undefined) {
-        var newlink = {};
-        newlink.source = pkToIndex[link.split(',')[0]];
-        newlink.target = pkToIndex[link.split(',')[1]];
-        newlink.value = links[link];
-        results.links.push(newlink);
-      }
-    });
-    return results;
   }
 
-  rc_util.getLatestRow(dbUrl, logsql).
-  then(function(row) {
-    var graph = graphify(JSON.parse(row.data));
-    res.send(graph);
+  hbaseClient.getCrawlInfo()
+  .then(function(crawlInfo) {
+    return graphify(crawlInfo.rowkey).then(function(graph) {
+      res.send(graph);
+    });
   })
   .catch(function(err) {
     console.log(err);
